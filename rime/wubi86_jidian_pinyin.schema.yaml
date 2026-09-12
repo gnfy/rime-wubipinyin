@@ -1,0 +1,134 @@
+# Rime schema settings
+# encoding: utf-8
+#
+# 极点五笔86 · 拼音辅助版
+#
+# 设计目标（三者同时成立）：
+#   ① 四码上屏       —— speller/max_code_length: 4 + auto_select
+#   ② 五笔候选优先   —— 拼音切成独立分段，与五笔不在同一候选列表竞争
+#   ③ 边打边学       —— z 引导的拼音候选，后面标注该字的五笔编码
+#
+# 为什么拼音必须加 z 引导键：
+#   librime 的四码上屏（speller.cc / AutoSelectAtMaxCodeLength）只认
+#   type == "table" | "user_table" 的候选。一旦五笔优先，第 4 个字母落下时
+#   排第一的就是五笔 table 候选，正在输入的拼音会被顶掉。实测本机词库：
+#   高频前 1000 个拼音词中有 14.7% 的前 4 个字母正好是合法五笔码
+#   （不是 bush、问题 went、北京 beij、上海 shan、电话 dian ……）。
+#   五笔86 码表不含任何 z 开头的编码，故 z 是零冲突引导键。
+
+schema:
+  schema_id: wubi86_jidian_pinyin
+  name: "极点五笔·拼音辅助"
+  version: "2.0"
+  author:
+    - 创始人 王永民先生
+    - 方案 KyleBing <https://github.com/KyleBing/rime-wubi86-jidian>
+  description: |
+    五笔为主，z 前缀呼出拼音。
+    拼音候选后标注该字的五笔编码，用于边打边学。
+  dependencies:
+    - pinyin_simp
+
+switches:
+  - name: ascii_mode
+    reset: 0
+    states: [ 中, En ]
+  - name: emoji_suggestion
+    states: [ "🈚️", "🈶️" ]
+    reset: 1
+  - name: full_shape
+    states: [ 半角, 全角 ]
+  - name: extended_charset
+    states: [ 常用, 扩展 ]
+  - name: ascii_punct
+    states: [ 。，, ．， ]
+
+engine:
+  processors:
+    - ascii_composer
+    - recognizer
+    - key_binder
+    - speller
+    - punctuator
+    - selector
+    - navigator
+    - express_editor
+  segmentors:
+    - ascii_segmentor
+    - matcher
+    - affix_segmentor@pinyin_hint     # 拼音独立成段（需配合下方 recognizer 规则）
+    - abc_segmentor
+    - punct_segmentor
+    - fallback_segmentor
+  translators:
+    - punct_translator
+    - table_translator                # 五笔主力：候选 type=table，四码上屏靠它
+    - script_translator@pinyin_hint   # 拼音：候选 type=phrase，不会被四码上屏顶掉
+  filters:
+    - reverse_lookup_filter@wubi_code_hint   # 给拼音候选标注五笔编码
+    - simplifier@emoji_suggestion            # Emoji（Ctrl+Shift+E 开关）
+    - uniquifier
+
+speller:
+  alphabet: abcdefghijklmnopqrstuvwxyz
+  max_code_length: 4                  # 四码上屏
+  auto_select: true                   # 四码唯一时自动上屏
+
+# ---------- 五笔（主）----------
+translator:
+  dictionary: wubi86_jidian
+  enable_charset_filter: true
+  enable_completion: true             # 不足四码也出候选，配合编码提示练盲打
+  enable_sentence: false
+  enable_user_dict: false
+  enable_encoder: false
+  encode_commit_history: false
+  # 注意：这里不要加 comment_format: xform/.+//
+  # 那一行会抹掉候选后面的五笔编码提示，正是「边打边学」要看的东西。
+  disable_user_dict_for_patterns:
+    - "^z.*$"
+
+# ---------- 拼音（辅，z 引导）----------
+pinyin_hint:
+  tag: pinyin_hint
+  dictionary: pinyin_simp
+  prefix: "z"                         # 五笔码表无 z 开头编码，零冲突
+  tips: "〔拼音〕"
+  enable_completion: true
+  enable_user_dict: false
+  initial_quality: 0.5
+  preedit_format:
+    - xform/([nl])v/$1ü/
+    - xform/([nl])ue/$1üe/
+    - xform/([jqxy])v/$1u/
+
+# ---------- 拼音候选 → 标注五笔编码（核心：边打边学）----------
+# ReverseLookupFilter 继承 TagMatching，tags 限定它只作用于拼音分段，
+# 不会去动五笔自己的候选。
+wubi_code_hint:
+  tags: [ pinyin_hint ]
+  dictionary: wubi86_jidian
+  overwrite_comment: true
+
+
+# ---------- Emoji ----------
+# 打字时把候选词对应的 emoji 作为额外候选给出（微笑 → 😊）。
+# Ctrl+Shift+E 开关；词表在 opencc/emoji.txt，可自行增删。
+emoji_suggestion:
+  opencc_config: emoji.json
+  option_name: emoji_suggestion
+  tips: all              # 在 emoji 后面用注释标出原词
+  inherit_comment: false # 不要继承五笔编码提示，否则注释会串味
+
+punctuator:
+  import_preset: default
+
+key_binder:
+  import_preset: default
+
+recognizer:
+  import_preset: default
+  patterns:
+    # affix_segmentor 只有在分段已带 pinyin_hint 标签时才会剥前缀，
+    # 所以这条 recognizer 规则是必需的，不能删。
+    pinyin_hint: "^z[a-z]*'?$"

@@ -1,0 +1,123 @@
+# squirrel.custom.yaml —— macOS（鼠鬚管 Squirrel）界面配置
+#
+# 颜色写法：`0xBBGGRR` 或带透明度的 `0xAABBGGRR`（注意是 BGR 倒序，不是常见的 RGB）。
+#   例：网页色 #D1635D（R=D1 G=63 B=5D）在这里要写成 0x5D63D1。
+#   带透明度时首字节 00 全透明、FF 不透明。
+#
+# 字体：填 FontBook.app 里能看到的名字即可。不确定就留空用系统默认，
+#   默认字体的纵向高度适配最好，指定字体有时会把候选框撑高。
+
+patch:
+  style:
+    color_scheme: roseo_maple            # 浅色模式皮肤
+    color_scheme_dark: roseo_maple_dark  # 深色模式皮肤
+
+  preset_color_schemes:
+    # ---------------- 浅色 ----------------
+    roseo_maple:
+      name: 玫枫 / Roseo Maple
+      author: KyleBing
+
+      candidate_format: "[label]. [candidate] [comment]"  # [comment] 用来显示五笔编码
+      candidate_list_layout: linear                       # stacked 竖排 | linear 横排
+      text_orientation: horizontal
+      status_message_type: mix                            # long | short | mix
+      memorize_size: true                                 # 记住候选框位置
+
+      translucency: true        # 磨砂背景（Squirrel 1.x）
+      shadow_size: 4            # 投影，让候选框浮起来
+      alpha: 1.0
+      corner_radius: 5
+      hilited_corner_radius: 5
+      border_height: 0
+      border_width: 0
+      border_color: 0xE0E0E0
+      line_spacing: 5
+      spacing: 5
+      base_offset: 0
+
+      back_color: 0xF4F4F6                      # 面板背景
+      candidate_text_color: 0x222222            # 候选词
+      hilited_candidate_back_color: 0xEDEDF9    # 选中背景
+      hilited_candidate_text_color: 0x4F11FA    # 选中候选词
+      label_color: 0xAAAAAA                     # 序号
+      hilited_candidate_label_color: 0x4F11FA   # 选中序号
+      comment_text_color: 0x5AC461              # 注释（五笔编码提示）
+      hilited_comment_text_color: 0x4FA85A
+
+      # 字号：序号和注释都比候选词小一号，视觉重心才在候选词上
+      font_point: 16
+      font_face: PingFang SC
+      candidate_font_face: PingFang SC
+      candidate_font_point: 16
+      label_font_face: Menlo                    # 等宽！否则数字宽度不一，候选词会左右跳动
+      label_font_point: 13
+      comment_font_face: Menlo                  # 编码是字母，等宽更好读
+      comment_font_point: 13
+
+      inline_preedit: true                      # 编码直接写进输入框
+      # 下面两项仅在 inline_preedit: false 时生效
+      hilited_text_color: 0x8E8E93
+      hilited_back_color: 0xEFEFF4
+
+    # ---------------- 深色 ----------------
+    roseo_maple_dark:
+      name: 玫枫-暗黑 / Roseo Maple Dark
+      author: KyleBing
+
+      candidate_format: "[label]. [candidate] [comment]"
+      candidate_list_layout: linear
+      text_orientation: horizontal
+      status_message_type: mix
+      memorize_size: true
+
+      translucency: true
+      shadow_size: 4
+      alpha: 1.0
+      corner_radius: 5
+      hilited_corner_radius: 5
+      border_height: 1
+      border_width: 1
+      border_color: 0x3F3F3F
+      line_spacing: 5
+      spacing: 5
+      base_offset: 0
+
+      back_color: 0x2B2B2B
+      candidate_text_color: 0xDCDCDC
+      # 注意：这里必须给选中项一个实底色。
+      # 原版用的是 0x00ffffff（首字节 00 = 全透明），深色下选中项只靠字体
+      # 透明度 60%→100% 的差别来区分，对比度过低，快速打字容易选错。
+      hilited_candidate_back_color: 0x3C1E7A
+      hilited_candidate_text_color: 0xFFFFFF
+      label_color: 0x8A8A8A
+      hilited_candidate_label_color: 0xE0E0E0
+      comment_text_color: 0x5AC461
+      hilited_comment_text_color: 0xC8E8CC
+
+      font_point: 16
+      font_face: PingFang SC
+      candidate_font_face: PingFang SC
+      candidate_font_point: 16
+      label_font_face: Menlo
+      label_font_point: 13
+      comment_font_face: Menlo
+      comment_font_point: 13
+
+      inline_preedit: true
+      hilited_text_color: 0x8E8E93
+      hilited_back_color: 0x3A3A3A
+
+  # ---------------------------------------------------------------
+  # 指定 App 默认英文输入
+  # ---------------------------------------------------------------
+  # 查某个 App 的 bundle id：
+  #   osascript -e 'id of app "iTerm"'
+  # 本配置面向开发者，默认让终端和编辑器进入即英文；不需要的自行注释掉。
+  app_options:
+    com.apple.Terminal:        { ascii_mode: true }   # 终端
+    com.googlecode.iterm2:     { ascii_mode: true }   # iTerm2
+    com.microsoft.VSCode:      { ascii_mode: true }   # VS Code
+    com.apple.dt.Xcode:        { ascii_mode: true }   # Xcode
+#    com.jetbrains.intellij:    { ascii_mode: true }   # IntelliJ IDEA
+#    com.termius-dmg.mac:       { ascii_mode: true }   # Termius

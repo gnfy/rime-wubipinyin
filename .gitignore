@@ -1,0 +1,17 @@
+# Rime 运行时产物与用户数据，绝不能提交
+build/
+*.userdb/
+*.userdb.txt
+*.txt.bak
+sync/
+installation.yaml          # 含设备唯一 installation_id
+user.yaml                  # 含 last_build_time
+_backup_*/
+
+# 用户自造词（使用者的私人词库，各自保留）
+*_user.dict.yaml.local
+
+# 系统垃圾
+.DS_Store
+Thumbs.db
+*.swp

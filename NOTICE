@@ -1,0 +1,55 @@
+rime-wubipinyin
+Copyright 2026 gnfy
+
+本产品包含由以下项目开发的作品，特此致谢。
+
+────────────────────────────────────────────────────────────────
+1. 五笔86 极点码表
+────────────────────────────────────────────────────────────────
+文件：rime/wubi86_jidian.dict.yaml
+      rime/wubi86_jidian_extra.dict.yaml
+      rime/wubi86_jidian_extra_district.dict.yaml
+      rime/wubi86_jidian*.schema.yaml（在此基础上大幅改写）
+      rime/wubi86_jidian.ico
+      rime/numbers.schema.yaml
+      rime/weasel.custom.yaml
+      docs/hamster-ios-keyboard/
+
+来源：KyleBing / rime-wubi86-jidian
+      https://github.com/KyleBing/rime-wubi86-jidian
+许可：Apache License 2.0
+五笔字形输入法由王永民先生发明。
+
+────────────────────────────────────────────────────────────────
+2. 简化字拼音词库
+────────────────────────────────────────────────────────────────
+文件：rime/pinyin_simp.dict.yaml
+      rime/pinyin_simp.schema.yaml
+
+来源：派生自 Android 开源项目 PinyinIME
+      http://android.git.kernel.org/?p=platform/packages/inputmethods/PinyinIME.git
+      经 RIME 项目整理为 rime-pinyin-simp
+许可：Apache License 2.0
+
+────────────────────────────────────────────────────────────────
+3. Emoji 词表（不随本仓库分发）
+────────────────────────────────────────────────────────────────
+文件：opencc/emoji.txt —— 本仓库【不包含】此文件
+
+来源：Mintimate / oh-my-rime
+      https://github.com/Mintimate/oh-my-rime
+许可：GNU General Public License v3.0
+
+说明：GPL-3.0 与本仓库采用的 Apache-2.0 存在传染性冲突，若打包分发会
+      迫使整个仓库改用 GPL-3.0。因此本仓库仅提供适配用的 OpenCC 配置
+      （rime/opencc/emoji.json），词表本身由 install.sh 在安装时从上游
+      按固定 commit 下载到使用者本机，并校验 SHA-256。
+      使用者取得的 emoji.txt 仍受 GPL-3.0 约束。
+      如不需要此功能，运行 ./install.sh --no-emoji 即可。
+
+────────────────────────────────────────────────────────────────
+4. RIME 输入法引擎
+────────────────────────────────────────────────────────────────
+本配置运行于 RIME / librime 之上，引擎本身不包含在本仓库中。
+      https://rime.im
+      https://github.com/rime/librime
