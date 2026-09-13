@@ -7,6 +7,7 @@
 #   z 引导拼音      不会打的字用拼音救场，候选后标注该字的五笔编码，边打边学
 #   简繁切换        zh_trad 开关（候选菜单里 Ctrl+Shift+1，或 Ctrl+0 选单）
 #   Emoji           Ctrl+Shift+E 开关
+#   日期时间        zrq 日期 / zsj 时间 / zdt 日期时间 / zxq 星期 / zts 时间戳
 #
 # 以前分成「纯五笔 / 拼音辅助 / 简入繁出 / 拼音混输繁体」四个方案，
 # 差别只是「按不按 z」和「简还是繁」——前者本来就是按了才触发，后者做成
@@ -69,6 +70,7 @@ engine:
     - punct_translator
     - table_translator                # 五笔主力：候选 type=table，四码上屏靠它
     - script_translator@pinyin_hint   # 拼音：候选 type=phrase，不会被四码上屏顶掉
+    - lua_translator@datetime         # zrq/zsj/zdt/zxq/zts → 日期时间（需 librime-lua，缺了自动跳过）
   filters:
     # 顺序有讲究：
     #   1. 先用简体原文反查五笔编码（码表是简体的）
@@ -127,6 +129,14 @@ wubi_code_hint:
 tradition:
   opencc_config: s2hk.json
   option_name: zh_trad
+
+# ---------- 日期时间（lua/datetime.lua）----------
+# 依赖 librime-lua 插件：Squirrel / Weasel 自带；Linux 需单独安装
+# （Arch: librime-lua，Debian: librime-plugin-lua）。没装的话 librime 只会在
+# 日志里记一条 "error creating translator" 然后跳过，其余功能不受影响。
+# 触发词 ≤ 3 字母，编码段长度 < 4，不会触发四码上屏。
+datetime:
+  tag: pinyin_hint       # 只在 z 引导的分段里响应；设为 "" 则全局响应
 
 # ---------- Emoji ----------
 # 把候选词对应的 emoji 作为额外候选给出（微笑 → 😊）。

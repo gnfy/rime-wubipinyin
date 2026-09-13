@@ -95,6 +95,14 @@ if [ "$DRY_RUN" = 0 ]; then
       mkdir -p "$RIME_DIR/$b" && cp -R "$f/." "$RIME_DIR/$b/"
     elif [ "$b" = "wubi86_jidian_user.dict.yaml" ] && [ -f "$RIME_DIR/$b" ]; then
       warn "保留你已有的 $b（未覆盖）"
+    elif [ "$b" = "rime.lua" ] && [ -f "$RIME_DIR/$b" ] && ! cmp -s "$f" "$RIME_DIR/$b"; then
+      # rime.lua 是 librime-lua 的公共入口，用户可能已有自己的。不覆盖，提示手动接入。
+      if grep -q 'require("datetime")' "$RIME_DIR/$b" 2>/dev/null; then
+        say "你已有的 rime.lua 已包含 datetime，跳过"
+      else
+        warn "保留你已有的 rime.lua（未覆盖）。要启用日期时间功能，请在其中加一行："
+        warn '    datetime = require("datetime")'
+      fi
     else
       cp "$f" "$RIME_DIR/$b"
     fi

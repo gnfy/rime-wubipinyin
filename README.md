@@ -32,6 +32,7 @@
 | 边打边学 | 拼音候选标注五笔编码；五笔候选显示完整编码 |
 | 简拼 | `zzg` → 中国 |
 | Emoji | `zweixiao` → 😊，`Ctrl+Shift+E` 开关 |
+| 日期时间 | `zrq` 日期、`zsj` 时间、`zdt` 日期时间、`zxq` 星期、`zts` 时间戳 |
 | 简繁 | 开关切换，有候选时 `Ctrl+Shift+1`，或 `Ctrl+0` 选单 |
 | 跨平台 | macOS 鼠鬚管 / Windows 小狼毫 / Linux ibus·fcitx5 |
 | 中英切换 | Shift 直切，终端和 IDE 可配置为进入即英文 |
@@ -89,7 +90,14 @@ cd rime-wubipinyin
 打 zzhongguo      → 中国，候选后标注的是「中国」的五笔编码
 打 zzg            → 简拼，同样出中国
 打 zweixiao       → 微笑 😊
+打 zrq            → 2026-09-13 / 2026年9月13日 / 20260913 / 二〇二六年九月十三日 …
+打 zsj            → 09:15 / 09:15:42 / 9点15分 / 上午9:15
+打 zdt            → 2026-09-13 09:15:42 / 2026-09-13T09:15:42+08:00 …
+打 zxq            → 星期六 / 周六 / Saturday / Sat
+打 zts            → 1789261742（秒）/ 1789261742000（毫秒）
 ```
+
+日期时间候选排在拼音候选之前：`zsj` 想要「时间」这个词就往后选，想要现在几点直接空格。这部分靠 `lua/datetime.lua`，需要 librime-lua——macOS / Windows 自带，Linux 要装（Arch `librime-lua`、Debian `librime-plugin-lua`）；没装只是少这个功能，其它照常。
 
 `z` 开头即进入拼音，候选框会显示 `〔拼音〕` 提示。五笔码里没有 z，所以永远不会误触发。
 
@@ -116,7 +124,9 @@ rime/                              安装时整个拷进 Rime 用户目录
 ├── default.custom.yaml            方案列表、按键绑定、标点
 ├── squirrel.custom.yaml           macOS 皮肤 + 分 App 的中英文默认
 ├── weasel.custom.yaml             Windows 皮肤
-├── wubi86_jidian.schema.yaml          ★ 五笔方案：z 拼音辅助 / 简繁开关 / Emoji
+├── wubi86_jidian.schema.yaml          ★ 五笔方案：z 拼音辅助 / 简繁开关 / Emoji / 日期时间
+├── rime.lua                           librime-lua 入口
+├── lua/datetime.lua                   日期时间候选（自研，Apache-2.0）
 ├── pinyin_simp.schema.yaml            独立拼音方案
 ├── numbers.schema.yaml                大写数字
 ├── wubi86_jidian.dict.yaml            五笔主码表（分层 import）
@@ -128,6 +138,7 @@ rime/                              安装时整个拷进 Rime 用户目录
 docs/design.md                     设计取舍与源码依据
 docs/hamster-ios-keyboard/         iOS 仓输入法键盘布局
 tools/collision_check.py           碰撞率数据复现脚本
+tools/test_datetime.lua            日期时间模块单元测试（lua tools/test_datetime.lua）
 ```
 
 ---
@@ -151,6 +162,10 @@ tools/collision_check.py           碰撞率数据复现脚本
 ```
 上线	上线 🚀
 ```
+
+### 改日期时间格式
+
+编辑 `lua/datetime.lua` 里的 `builders` 表，每个触发词对应一组 `{ 文本, 注释 }`。用 `os.date("*t")` 的字段自己拼，**不要**用 `%-m` 这类 GNU 扩展——Lua 5.4 会报错，macOS 也不认。
 
 ### 换皮肤
 

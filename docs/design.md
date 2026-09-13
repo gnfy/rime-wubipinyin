@@ -221,3 +221,33 @@ speller:
 同一个原因。英文单词普遍超过 4 个字母，一开四码上屏，打 `hello` 到第 4 码就被顶上屏了。本配置假定你用 Shift 切换中英（`default.custom.yaml` 里 `Shift_L/Shift_R: commit_code`），把四码上屏的手感完整留给五笔。
 
 想要英文混输，参考 oh-my-rime 的 `melt_eng` 方案，并同步关掉四码上屏。
+
+---
+
+## 八、日期时间为什么也从 `z` 进
+
+`lua/datetime.lua` 提供 `zrq` `zsj` `zdt` `zxq` `zts`。触发键选 `z` 而不是 oh-my-rime 的 `o` 前缀或 rime-ice 的 `/` 前缀，理由：
+
+| 方案 | 问题 |
+|---|---|
+| 字母前缀 `osj` | `o` 是五笔键。`sj`=查、`rq`=换、`dt`=帮 都是有效五笔码；`osj` 虽无精确匹配，`enable_completion` 会弹出一堆 `osj?` 补全候选和时间候选混在一起 |
+| `/sj` | 得把 `/` 从直接上屏改成候选列表才能进入编码状态，中文模式下敲 `/` 多一步、`/usr` 这类路径会被截进候选框。面向开发者的配置不该付这个代价 |
+| **`zsj`** | `z` 已经是「辅助键」，拼音、emoji 都从它进。零新按键、零行为变化 |
+
+与四码上屏的关系：Lua 产出的 `SimpleCandidate` 是 `is_auto_selectable()` 认可的类型，但 `reached_max_code_length()` 要求编码段长度 ≥ 4，而触发词剥掉 `z` 后最长 2 个字母。**触发词保持 ≤ 3 个字母就永远安全。**
+
+时间候选和拼音候选（`sj` → 时间 / 世界）在同一分段出现，靠 `cand.quality = 1000 - i` 排到前面。用户特意敲 `zsj` 多半是要现在几点；要「时间」这个词，五笔 `jfuj` 更快。
+
+缺 librime-lua 时的行为，`engine.cc` 的 `CreateComponentsFromList`：
+
+```cpp
+auto c = T::Require(ticket.klass);
+if (!c) {
+  LOG(ERROR) << "error creating " << component_type << ": '" << ticket.klass << "'";
+  continue;     // 跳过这一个组件，其余照常
+}
+```
+
+所以它可以直接挂在主方案里，不必拆成可选方案。
+
+Lua 实现上的两个坑：`os.date("%-m")` 这类 GNU 扩展在 Lua 5.4 里直接报错（它校验转换符是否属于 C99），macOS 的 BSD strftime 也不认——一律 `os.date("*t")` 取字段自己 `string.format`。`//` 整除是 5.3+ 语法，部分发行版的 librime-lua 按 LuaJIT 编译，用 `math.floor` 代替。
