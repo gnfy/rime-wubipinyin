@@ -106,6 +106,8 @@ cd rime-wubipinyin
 
 | 按键 | 作用 |
 |---|---|
+| <kbd>Enter</kbd> | 上屏高亮候选（Rime 默认是原样上屏字母，已改成主流习惯） |
+| <kbd>Ctrl</kbd>+<kbd>Enter</kbd> | 原样上屏编码字母 |
 | <kbd>Shift</kbd> | 中英切换（已输入内容上屏） |
 | <kbd>;</kbd> <kbd>'</kbd> | 选第 2、3 个候选 |
 | <kbd>[</kbd> <kbd>]</kbd> | 上下翻页 |

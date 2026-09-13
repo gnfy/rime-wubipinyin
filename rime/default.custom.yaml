@@ -68,8 +68,14 @@ patch:
       - { when: has_menu, accept: Shift+Tab, send: Page_Up }
       - { when: has_menu, accept: Tab, send: Page_Down }
 
-      # 回车清码
-#      - { when: composing, accept: Return, send: Escape }
+      # 回车 = 上屏当前高亮候选。
+      # Rime 默认（express_editor）回车是把编码字母原样上屏，空格才是上屏候选，
+      # 与搜狗 / 微软拼音等主流习惯相反。这里只在「有候选菜单」时把回车转成空格，
+      # 没候选时回车仍原样上屏字母（打错码时想要字母的场景）。
+      # 有候选但就是想要原始字母：Ctrl+回车。
+      # 刻意不换成 fluid_editor：它会关掉 _auto_commit，四码上屏就废了。
+      - { when: has_menu, accept: Return, send: space }
+      - { when: has_menu, accept: KP_Enter, send: space }   # 数字键盘的回车
 
       # emacs key bindings, copy from https://github.com/rime/rime-prelude/blob/master/key_bindings.yaml
       - { when: composing, accept: Control+p, send: Up }
