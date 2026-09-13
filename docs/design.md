@@ -236,6 +236,8 @@ speller:
 
 与四码上屏的关系：Lua 产出的 `SimpleCandidate` 是 `is_auto_selectable()` 认可的类型，但 `reached_max_code_length()` 要求编码段长度 ≥ 4，而触发词剥掉 `z` 后最长 2 个字母。**触发词保持 ≤ 3 个字母就永远安全。**
 
+**只按 `z` 的可发现性。** `affix_segmentor` 在只输入了引导键时，会把分段的标签从 `pinyin_hint` 改成 `pinyin_hint_prefix` 并挂上 `tips`（见 `affix_segmentor.cc` 的 "just prefix" 分支）。这个状态原本没有任何候选，用户只看到一句「〔拼音〕」，不知道 z 还能干别的。`datetime.lua` 对这个 `_prefix` 分段也响应：每个触发词给一条代表候选（今天日期、现在时间…），注释里写触发词。于是 `z` 一按既是菜单又能直接选，不需要把 tips 写成一长串。分段长度 1，四码上屏无关。
+
 时间候选和拼音候选（`sj` → 时间 / 世界）在同一分段出现，靠 `cand.quality = 1000 - i` 排到前面。用户特意敲 `zsj` 多半是要现在几点；要「时间」这个词，五笔 `jfuj` 更快。
 
 缺 librime-lua 时的行为，`engine.cc` 的 `CreateComponentsFromList`：

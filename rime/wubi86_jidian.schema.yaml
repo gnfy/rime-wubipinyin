@@ -8,6 +8,7 @@
 #   简繁切换        zh_trad 开关（候选菜单里 Ctrl+Shift+1，或 Ctrl+0 选单）
 #   Emoji           Ctrl+Shift+E 开关
 #   日期时间        zrq 日期 / zsj 时间 / zdt 日期时间 / zxq 星期 / zts 时间戳
+#                   只按 z：每个功能出一条代表候选（今天日期、现在时间…），兼做菜单
 #
 # 以前分成「纯五笔 / 拼音辅助 / 简入繁出 / 拼音混输繁体」四个方案，
 # 差别只是「按不按 z」和「简还是繁」——前者本来就是按了才触发，后者做成
@@ -104,7 +105,7 @@ pinyin_hint:
   tag: pinyin_hint
   dictionary: pinyin_simp
   prefix: "z"                         # 五笔码表无 z 开头编码，零冲突
-  tips: "〔拼音〕"
+  tips: "〔拼音 · 时间〕"                # z 同时是拼音和日期时间的入口，提示两者都写
   enable_completion: true
   enable_user_dict: false
   initial_quality: 0.5

@@ -16,7 +16,11 @@ end
 function yield(c) out[#out + 1] = c end
 local function seg(tags) return { start = 1, _end = 3, has_tag = function(_, t) return tags[t] == true end } end
 local function env(tagcfg)
-  return { engine = { schema = { config = { get_string = function(_, k) return k == "datetime/tag" and tagcfg or nil end } } } }
+  return { engine = { schema = { config = { get_string = function(_, k)
+    if k == "datetime/tag" then return tagcfg end
+    if k == "pinyin_hint/prefix" then return "z" end
+    return nil
+  end } } } }
 end
 local fails = 0
 local function check(cond, msg) if cond then print("  ✅ " .. msg) else fails = fails + 1; print("  ❌ " .. msg) end end
@@ -40,6 +44,21 @@ out = {}; M.func("rq", seg({ pinyin_hint = true }), e)
 local desc = true
 for i = 2, #out do if not (out[i].quality < out[i-1].quality) then desc = false end end
 check(desc and out[#out].quality > 100, "quality 严格递减且远高于拼音候选（最低 " .. out[#out].quality .. "）")
+
+-- 只按 z 的总览候选
+check(e.prefix == "z" and e.prefix_tag == "pinyin_hint_prefix", "init 读到 prefix=z、prefix_tag=pinyin_hint_prefix")
+out = {}; M.func("z", seg({ pinyin_hint_prefix = true }), e)
+check(#out == #M.OVERVIEW, "只按 z → " .. #M.OVERVIEW .. " 条总览候选")
+local ok = true
+for i, k in ipairs(M.OVERVIEW) do
+  if not (out[i] and out[i].comment:find(k, 1, true) and out[i].quality == 1000 - i) then ok = false end
+end
+check(ok, "总览候选注释含触发词、顺序与 OVERVIEW 一致、quality 递减")
+check(out[1].text:match("^%d%d%d%d%-%d%d%-%d%d$") ~= nil, "总览第 1 条是 ISO 日期: " .. out[1].text)
+out = {}; M.func("z", seg({ pinyin_hint = true }), e);         check(#out == 0, "输入 z 但分段不是 _prefix → 不产总览")
+out = {}; M.func("r", seg({ pinyin_hint = true }), e);         check(#out == 0, "zr（半个触发词）→ 不产出")
+local e_all = env(""); M.init(e_all)
+out = {}; M.func("z", seg({ pinyin_hint_prefix = true }), e_all); check(#out == 0, 'tag 为 "" 时无引导键概念，不产总览')
 
 -- 门禁
 out = {}; M.func("rq", seg({ abc = true }), e);            check(#out == 0, "非 pinyin_hint 段不响应")

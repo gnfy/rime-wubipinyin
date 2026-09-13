@@ -3,6 +3,8 @@
 -- rime-wubipinyin · Apache-2.0 · 从零实现，不含任何第三方 Lua 代码。
 --
 -- 触发方式：在 z 引导的拼音段里输入触发词
+--   z    只按引导键 → 每个功能给一条代表候选（今天日期、现在时间…），
+--        注释里写触发词，兼做「z 能干什么」的菜单
 --   zrq  日期        zsj  时间        zdt  日期 + 时间
 --   zxq  星期        zts  时间戳
 --
@@ -108,27 +110,50 @@ builders.ts = function(_)
   }
 end
 
+-- 只按 z 时的总览：顺序即候选顺序，每项取该触发词的第一个格式
+local OVERVIEW = { "rq", "sj", "dt", "xq", "ts" }
+local LABEL    = { rq = "日期", sj = "时间", dt = "日期时间", xq = "星期", ts = "时间戳" }
+
 -- 暴露给测试用
 M.builders = builders
+M.OVERVIEW = OVERVIEW
+
+local function emit(seg, text, comment, quality)
+  local cand = Candidate("datetime", seg.start, seg._end, text, comment)
+  cand.quality = quality
+  yield(cand)
+end
 
 function M.init(env)
+  local config = env.engine.schema.config
   -- 只响应带此标签的分段。默认 pinyin_hint，即 z 引导的拼音段；
   -- 在方案里设 datetime/tag 可改，设为空字符串则对所有分段生效。
-  local config = env.engine.schema.config
   local tag = config:get_string("datetime/tag")
   env.tag = (tag == nil) and "pinyin_hint" or tag
+  -- affix_segmentor 在「只按了引导键」时会把分段改标为 <tag>_prefix，
+  -- 引导键本身从同名节点的 prefix 读，和方案配置保持一致。
+  env.prefix_tag = env.tag .. "_prefix"
+  env.prefix = config:get_string(env.tag .. "/prefix") or "z"
 end
 
 function M.func(input, seg, env)
+  -- 只按了引导键：给每个功能一条代表候选，注释里写触发词，兼做菜单
+  if env.tag ~= "" and input == env.prefix and seg:has_tag(env.prefix_tag) then
+    local t = os.date("*t")
+    for i, k in ipairs(OVERVIEW) do
+      local first = builders[k](t)[1]
+      emit(seg, first[1], "〔" .. k .. " · " .. LABEL[k] .. "〕", 1000 - i)
+    end
+    return
+  end
+
   if env.tag ~= "" and not seg:has_tag(env.tag) then return end
   local build = builders[input]
   if not build then return end
 
   local list = build(os.date("*t"))
   for i, item in ipairs(list) do
-    local cand = Candidate("datetime", seg.start, seg._end, item[1], item[2])
-    cand.quality = 1000 - i     -- 远高于拼音候选；递减保证内部顺序不被打乱
-    yield(cand)
+    emit(seg, item[1], item[2], 1000 - i)   -- 远高于拼音候选；递减保证内部顺序
   end
 end
 
