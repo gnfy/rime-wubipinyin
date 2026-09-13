@@ -7,14 +7,11 @@
 
 
 patch:
-  # 菜单中可选的方案列表，可根据喜好自行调整顺序，第一位为默认方案
+  # 方案列表，第一位为默认方案
   schema_list:
-    - schema: wubi86_jidian_pinyin      # 五笔拼音混输
-    - schema: wubi86_jidian             # 五笔
-    - schema: numbers                   # 大写数字
-    - schema: wubi86_jidian_trad        # 五笔 - 简入繁出
-    - schema: wubi86_jidian_trad_pinyin # 五笔拼音混输 - 简入繁出
-    - schema: pinyin_simp               # 普通拼音
+    - schema: wubi86_jidian   # 极点五笔（含 z 拼音辅助、简繁开关、Emoji）
+    - schema: numbers         # 大写数字
+    - schema: pinyin_simp     # 独立拼音方案（同时是五笔方案的拼音依赖）
 
   # Menu
   menu:
@@ -48,8 +45,12 @@ patch:
 
   key_binder:
     bindings:
-      # Emoji 开关（在 schema 里声明了 emoji_suggestion 的方案才有效）
+      # Emoji 开关
       - { when: always, accept: "Control+Shift+E", toggle: emoji_suggestion }
+      # 简繁切换。只在有候选菜单时生效，避免全局劫持 Ctrl+Shift+1；
+      # Weasel 发送的是 exclam，两条都写才能跨平台。
+      - { when: has_menu, accept: "Control+Shift+1",      toggle: zh_trad }
+      - { when: has_menu, accept: "Control+Shift+exclam", toggle: zh_trad }
 #      - { when: has_menu, accept: comma, send: 2 }  # 候选2 用逗号选择 （修改的时候不要多加或少加空格，跟前面的对齐就好了）
 #      - { when: has_menu, accept: period, send: 3 } # 候选3 用句号选择
       - { when: has_menu, accept: semicolon, send: 2 }  # 候选2 用分号

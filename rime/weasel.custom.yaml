@@ -1,102 +1,132 @@
-﻿# encoding: utf-8
-
-customization:
-  distribution_code_name: Weasel
-  distribution_version: 0.13.3
-  generator: "Weasel"
-  modified_time: "2023-06-09"
-  rime_version: "0.16.0"
-  config_version: "0.22"
+# weasel.custom.yaml —— Windows（小狼毫 Weasel）界面配置
+#
+# 颜色写法：本文件所有配色显式声明 color_format: abgr，即 `0xAABBGGRR`
+#   （BGR 倒序，与 macOS 的 squirrel.custom.yaml 一致，方便两边对照）。
+#   例：网页色 #D1635D（R=D1 G=63 B=5D）写成 0x5D63D1。首字节透明度可省略。
+#
+# 字体：Consolas 随 Windows 自带，等宽，用于序号和五笔编码注释。
+#   候选词用 Microsoft YaHei（微软雅黑）。
 
 patch:
-  show_notifications_time: 200            # 部署通知、中英切换标识  显示时长 ms
+  show_notifications_time: 200            # 部署/中英切换提示的显示时长 ms
+
   style:
-    inline_preedit: true
-    color_scheme: MacRoseo                 # 匹配正文的颜色方案，对应正文的颜色方案名
+    color_scheme: roseo_maple               # 浅色
+    color_scheme_dark: roseo_maple_dark     # 深色（Weasel 0.15+ 跟随系统）
+
+    inline_preedit: true                    # 编码直接写进输入框
+    preedit_type: composition               # composition | preview | preview_all
     display_tray_icon: false
-    horizontal: true                        # 横向排列候选
-    font_point: 13                          # 候选词 字号
-    font_face: "Microsoft Yahei"            # 字体 - 候选文字 例子： "Microsoft Yahei:12:15:bold"
-    label_font_face: "Microsoft Yahei"     # string    序号字体 标注
-    label_font_point: 12                   # number    序号字体 大小
-    comment_font_face: "Microsoft Yahei"   # string    注释字体
-    comment_font_point: 11                 # number    注释字体 大小
-    text_orientation: horizontal                         # horizontal | vertical
-    preedit_type: "composition"            #  "composition" | "preview" | "preview_all"
+    text_orientation: horizontal
 
+    # 候选带五笔编码注释时竖排更易读；想横排改 horizontal: true 且 layout/type: horizontal
+    horizontal: false
     layout:
-      align_type: "bottom"        # string  "top" | "center" | "bottom" 序号、候选词、注释纵向对齐方式
-      corner_radius: 3            # number  圆角大小 候选面板
-      enhanced_position: false    # bool 允许光标位置获取失败时，在当空窗口左上角绘制候选框（而不是桌面左上角）
-      shadow_radius: 3
-      shadow_offset_x: 2          # number 阴影横向偏移量
-      shadow_offset_y: 2          # number 阴影纵向偏移量
-      border_width: 1             # number 边框宽度 候选边框、面板边框
-      candidate_spacing: 10       # number 候选之间的间隔
-      hilite_spacing: 3           # number 序号与候选词之间的间隔 宽度
-      hilite_padding: 0           # number 候选词边界值 宽度
-      margin_x: 9                 # number 内容离边框的，左右边界  当 margin_x 和 margin_y 设置为负值时，将不显示候选窗口，但不影响方案选择
-      margin_y: 5                 # number 内容离边框的，上下边界  当 margin_x 和 margin_y 设置为负值时，将不显示候选窗口，但不影响方案选择
+      type: vertical                        # vertical | horizontal | vertical_text | vertical+fullscreen
+      align_type: center                    # 序号、候选词、注释纵向对齐
+      corner_radius: 5
+      round_corner: 5                       # 选中项圆角
+      border_width: 1
+      margin_x: 10
+      margin_y: 6
+      spacing: 8                            # 编码与候选之间（inline_preedit: false 时）
+      candidate_spacing: 6                  # 候选之间
+      hilite_spacing: 6                     # 序号与候选词之间
+      hilite_padding: 4                     # 选中项内边距
+      shadow_radius: 6
+      shadow_offset_x: 0
+      shadow_offset_y: 2
 
-  preset_color_schemes:   # 主题：颜色方案
-    MacRoseo: # 玫红字体
-      name: 玫红 / MacRoseo
+    # 字号：序号和注释都比候选词小一号，视觉重心在候选词上
+    font_face: "Microsoft YaHei"
+    font_point: 13
+    label_font_face: "Consolas"             # 等宽！否则数字宽度不一，候选词会左右跳动
+    label_font_point: 11
+    comment_font_face: "Consolas"           # 五笔编码是字母，等宽更好读
+    comment_font_point: 11
+
+  preset_color_schemes:
+    # ---------------- 浅色 ----------------
+    roseo_maple:
+      name: 玫枫 / Roseo Maple
       author: KyleBing
-      creat_time: "2021-07-26"
-      back_color: 0xFFFFFF
-      border_color: 0x33000000                     # color 面板边框颜色
-      text_color: 0x000000
-      candidate_text_color: 0x000000
-      comment_text_color: 0xBBCC27
+      color_format: abgr
 
-      label_color: 0x999999                        # color 序号颜色 未选中的
-      shadow_color:  0x44000000                    # color 面板阴影
+      back_color: 0xF4F4F6                       # 面板背景
+      border_color: 0xE0E0E0
+      shadow_color: 0x30000000
+      text_color: 0x8E8E93                       # 编码区文字（inline_preedit: false 时）
+      hilited_text_color: 0x4F11FA
+      hilited_back_color: 0xEFEFF4
 
-      nextpage_color:  0x000000                    # color
-      prevpage_color:  0x000000                    # color
+      candidate_text_color: 0x222222             # 候选词
+      label_color: 0xAAAAAA                      # 序号
+      comment_text_color: 0x5AC461               # 注释（五笔编码提示）
 
-      candidate_back_color:  0xFFFFFF              # color 面板背景色
-      candidate_shadow_color:  0x00000000          # color 面板阴影颜色
-      candidate_border_color:  0x00000000          # color 面板边框颜色
+      # 选中项必须有实底色。上游 MacRoseo 用的是 0x004F11FA（首字节 00 全透明），
+      # 只靠字色区分，对比度过低，快速打字容易选错。
+      hilited_candidate_back_color: 0xEDEDF9
+      hilited_candidate_text_color: 0x4F11FA
+      hilited_label_color: 0x4F11FA
+      hilited_comment_text_color: 0x4FA85A
+      hilited_candidate_border_color: 0x00000000
+      hilited_candidate_shadow_color: 0x00000000
 
-      hilited_shadow_color:  0xcccccc              # color 阴影颜色 选中的候选
-      hilited_text_color: 0x000000
-      hilited_back_color: 0xEDEDF9
+      prevpage_color: 0xAAAAAA
+      nextpage_color: 0xAAAAAA
 
-      hilited_label_color: 0x884F11FA              # color 序号颜色，选中的
-      hilited_candidate_text_color: 0x4F11FA       # color 文字颜色 选中的候选
-      hilited_candidate_back_color: 0x004F11FA     # color 背景色 选中的候选
-      hilited_candidate_shadow_color:  0x004F11FA  # color aarrggbb
-      hilited_candidate_border_color:  0x004F11FA  # color 边框颜色 选中的候选
-#      hilited_mark_color:  0xEDEDF9                # color 候选项前面的高亮颜色
-
-
-    MacRoseoAlt: # 玫红背景
-      name: MacRoseo
+    # ---------------- 深色 ----------------
+    roseo_maple_dark:
+      name: 玫枫-暗黑 / Roseo Maple Dark
       author: KyleBing
-      creat_time: "2021-07-26"
+      color_format: abgr
+
+      back_color: 0x2B2B2B
+      border_color: 0x3F3F3F
+      shadow_color: 0x80000000
+      text_color: 0x8E8E93
+      hilited_text_color: 0xFFFFFF
+      hilited_back_color: 0x3A3A3A
+
+      candidate_text_color: 0xDCDCDC
+      label_color: 0x8A8A8A
+      comment_text_color: 0x5AC461
+
+      hilited_candidate_back_color: 0x3C1E7A     # 深玫红实底，与 macOS 深色一致
+      hilited_candidate_text_color: 0xFFFFFF
+      hilited_label_color: 0xE0E0E0
+      hilited_comment_text_color: 0xC8E8CC
+      hilited_candidate_border_color: 0x00000000
+      hilited_candidate_shadow_color: 0x00000000
+
+      prevpage_color: 0x8A8A8A
+      nextpage_color: 0x8A8A8A
+
+    # ---------------- 备选：玫红实底（上游 MacRoseoAlt）----------------
+    roseo_maple_solid:
+      name: 玫枫-实底 / Roseo Maple Solid
+      author: KyleBing
+      color_format: abgr
       back_color: 0xFFFFFF
       border_color: 0xD6D6D6
       text_color: 0x000000
       hilited_text_color: 0x000000
       hilited_back_color: 0xFFFFFF
+      candidate_text_color: 0x000000
+      label_color: 0x999999
+      comment_text_color: 0x5AC461
       hilited_candidate_text_color: 0xFFFFFF
       hilited_candidate_back_color: 0x4F11FA
-      candidate_text_color: 0x000000
-      comment_text_color: 0xBBCC27
+      hilited_label_color: 0xFFFFFF
+      hilited_comment_text_color: 0xFFFFFF
 
-    WhiteAqua: # 水绿背景
-      name: WhiteAqua
-      author: KyleBing
-      creat_time: "2021-07-26"
-      back_color: 0xFFFFFF
-      border_color: 0xD6D6D6
-      text_color: 0x000000
-      hilited_text_color: 0x000000
-      hilited_back_color: 0xFFFFFF
-      hilited_candidate_text_color: 0xFFFFFF
-      hilited_candidate_back_color: 0x9BAD23
-      candidate_text_color: 0x000000
-      comment_text_color: 0xBBCC27
-
-  style/layout/border_width: 1
+  # ---------------------------------------------------------------
+  # 指定程序默认英文输入（进程名，不区分大小写）
+  # ---------------------------------------------------------------
+  app_options:
+    windowsterminal.exe:  { ascii_mode: true }
+    cmd.exe:              { ascii_mode: true }
+    powershell.exe:       { ascii_mode: true }
+    pwsh.exe:             { ascii_mode: true }
+    code.exe:             { ascii_mode: true }   # VS Code
+#    idea64.exe:           { ascii_mode: true }   # IntelliJ IDEA

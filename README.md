@@ -32,7 +32,7 @@
 | 边打边学 | 拼音候选标注五笔编码；五笔候选显示完整编码 |
 | 简拼 | `zzg` → 中国 |
 | Emoji | `zweixiao` → 😊，`Ctrl+Shift+E` 开关 |
-| 简繁 | 独立的简入繁出方案 |
+| 简繁 | 开关切换，有候选时 `Ctrl+Shift+1`，或 `Ctrl+0` 选单 |
 | 跨平台 | macOS 鼠鬚管 / Windows 小狼毫 / Linux ibus·fcitx5 |
 | 中英切换 | Shift 直切，终端和 IDE 可配置为进入即英文 |
 
@@ -66,10 +66,9 @@ cd rime-wubipinyin
 ./install.sh --dir <path>  # 自动识别失败时手动指定 Rime 用户目录
 ```
 
-装完在输入法菜单里选方案（macOS 默认 <kbd>Ctrl</kbd>+<kbd>`</kbd>）：
+装完后在输入法菜单里选「**极点五笔**」（macOS 默认 <kbd>Ctrl</kbd>+<kbd>`</kbd>）。
 
-- **极点五笔·拼音辅助** ← 推荐，日常用这个
-- **极点五笔** ← 纯五笔，不带拼音
+只有这一个五笔方案：不按 `z` 就是纯五笔，按了 `z` 就是拼音，简繁是开关。以前拆成「纯五笔 / 拼音辅助 / 简入繁出」几个方案，用户得先想「我该选哪个」，现在不用了。
 
 还原：
 
@@ -103,6 +102,7 @@ cd rime-wubipinyin
 | <kbd>[</kbd> <kbd>]</kbd> | 上下翻页 |
 | <kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd> | 下一页 / 上一页 |
 | <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>E</kbd> | Emoji 开关 |
+| <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>1</kbd> | 简繁切换（有候选菜单时） |
 | <kbd>Ctrl</kbd>+<kbd>0</kbd> | 方案选单 |
 
 另外内置了一套 Emacs 风格的编辑键（<kbd>Ctrl</kbd>+<kbd>p</kbd>/<kbd>n</kbd>/<kbd>b</kbd>/<kbd>f</kbd>/<kbd>a</kbd>/<kbd>e</kbd>/<kbd>h</kbd>/<kbd>g</kbd>），见 `rime/default.custom.yaml`。
@@ -116,9 +116,7 @@ rime/                              安装时整个拷进 Rime 用户目录
 ├── default.custom.yaml            方案列表、按键绑定、标点
 ├── squirrel.custom.yaml           macOS 皮肤 + 分 App 的中英文默认
 ├── weasel.custom.yaml             Windows 皮肤
-├── wubi86_jidian_pinyin.schema.yaml   ★ 主方案：五笔 + z 拼音
-├── wubi86_jidian.schema.yaml          纯五笔
-├── wubi86_jidian_trad*.schema.yaml    简入繁出
+├── wubi86_jidian.schema.yaml          ★ 五笔方案：z 拼音辅助 / 简繁开关 / Emoji
 ├── pinyin_simp.schema.yaml            独立拼音方案
 ├── numbers.schema.yaml                大写数字
 ├── wubi86_jidian.dict.yaml            五笔主码表（分层 import）
@@ -169,6 +167,7 @@ tools/collision_check.py           碰撞率数据复现脚本
 - **四码及以上的词打不出 emoji。** 打满 4 码就自动上屏了，emoji 候选来不及选。能选到 emoji 的只有简码字（如 `o` → 火 🔥），共 136 个。日常用 `z` 拼音打 emoji。
 - **没有英文混输、没有自动造词。** 都与四码上屏冲突，属于有意取舍。
 - **拼音要多按一个 `z`。** 这是保住四码上屏的代价，理由见设计文档。
+- **拼音没有手动音节分隔符。** 单引号被「选第三候选」占用（极点五笔惯例），`zxian` 不能写成 `zxi'an`。拼音在本方案里只用来救场查单字，影响很小。
 
 ---
 

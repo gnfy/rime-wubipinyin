@@ -1,36 +1,52 @@
 # Rime schema settings
 # encoding: utf-8
+#
+# 极点五笔86 —— 本仓库唯一的五笔方案
+#
+#   五笔为主        四码上屏完整保留
+#   z 引导拼音      不会打的字用拼音救场，候选后标注该字的五笔编码，边打边学
+#   简繁切换        zh_trad 开关（候选菜单里 Ctrl+Shift+1，或 Ctrl+0 选单）
+#   Emoji           Ctrl+Shift+E 开关
+#
+# 以前分成「纯五笔 / 拼音辅助 / 简入繁出 / 拼音混输繁体」四个方案，
+# 差别只是「按不按 z」和「简还是繁」——前者本来就是按了才触发，后者做成
+# 开关即可。合并后用户不用再想「我该选哪个」。
+#
+# 为什么拼音要 z 引导、为什么没有英文混输：见 docs/design.md。一句话版本：
+# librime 的四码上屏只认 table 类型候选；五笔优先 + 无前缀混输时，第 4 个
+# 字母落下就会把正在打的拼音顶掉，实测高频拼音词 13–15% 会中招。
+# 五笔86 码表不含任何 z 开头的编码，所以 z 是零冲突引导键。
 
 schema:
   schema_id: wubi86_jidian
-  name: "极点五笔86"
-  version: "1.0"
-  icon: "wubi86_jidian.ico"           # string 方案图标，格式： .ico
-  ascii_icon:                         # string
+  name: "极点五笔"
+  version: "3.0"
+  icon: "wubi86_jidian.ico"
   author:
     - 创始人 王永民先生
+    - 码表 KyleBing <https://github.com/KyleBing/rime-wubi86-jidian>
+    - 方案 gnfy <https://github.com/gnfy/rime-wubipinyin>
   description: |
-    五笔字形 86 极点极爽版，方案由 KyleBing 修改 - 2019年11月08日 10:26
+    五笔86 极点码表。z 引导拼音辅助并标注五笔编码，简繁开关，Emoji。
   dependencies:
-#    - pinyin_simp
+    - pinyin_simp
 
 switches:
   - name: ascii_mode
     reset: 0
     states: [ 中, En ]
-  - name: emoji_suggestion
-    states: [ "🈚️", "🈶️" ]
-    reset: 1
   - name: zh_trad
-    reset: 0    # 初始状态为 0: 简 -> 简 1: 简 -> 繁
-    states: [ 简体, 繁体 ]
+    reset: 0
+    states: [ 简, 繁 ]
+  - name: emoji_suggestion
+    reset: 1
+    states: [ "🈚️", "🈶️" ]
   - name: full_shape
     states: [ 半角, 全角 ]
   - name: extended_charset
     states: [ 常用, 扩展 ]
   - name: ascii_punct
     states: [ 。，, ．， ]
-
 
 engine:
   processors:
@@ -45,84 +61,85 @@ engine:
   segmentors:
     - ascii_segmentor
     - matcher
+    - affix_segmentor@pinyin_hint     # 拼音独立成段（需配合下方 recognizer 规则）
     - abc_segmentor
     - punct_segmentor
     - fallback_segmentor
   translators:
     - punct_translator
-    - reverse_lookup_translator
-    - table_translator
-#    - history_translator@repeat_last_input # 重复上一次输入（默认停用，触发键与 z 反查冲突，见文件末尾）
+    - table_translator                # 五笔主力：候选 type=table，四码上屏靠它
+    - script_translator@pinyin_hint   # 拼音：候选 type=phrase，不会被四码上屏顶掉
   filters:
+    # 顺序有讲究：
+    #   1. 先用简体原文反查五笔编码（码表是简体的）
+    #   2. 再用简体原文匹配 emoji 词表（词表是简体的）
+    #   3. 最后才做简→繁转换
+    # 反过来的话，转成繁体后既查不到编码也匹配不到 emoji。
+    - reverse_lookup_filter@wubi_code_hint
     - simplifier@emoji_suggestion
     - simplifier@tradition
-
-
-# 自动造词功能：参阅： https://github.com/KyleBing/rime-wubi86-jidian#6-%E5%BC%80%E5%90%AF%E8%87%AA%E5%8A%A8%E9%80%A0%E8%AF%8D
+    - uniquifier
 
 speller:
-  max_code_length: 4                    # 四码上屏
-  auto_select: true                     # 四码唯一时，自动上屏
-#  auto_clear: max_length                # 空码时自动清空
+  alphabet: abcdefghijklmnopqrstuvwxyz
+  max_code_length: 4                  # 四码上屏
+  auto_select: true                   # 四码唯一时自动上屏
 
+# ---------- 五笔（主）----------
 translator:
-  dictionary: wubi86_jidian             # 翻译器将调取此字典文件
-  enable_charset_filter: true           # 开启字符集过滤
-  enable_completion: true               # 是否显示编码未输入完整的词条
-
-  enable_sentence: false                # 句子输入模式
-  enable_user_dict: false               # 是否开启用户词典（用户词典记录动态字词频，用户词）
+  dictionary: wubi86_jidian
+  enable_charset_filter: true         # 配合 extended_charset 开关过滤生僻字
+  enable_completion: true             # 不足四码也出候选，配合编码提示练盲打
+  enable_sentence: false
+  enable_user_dict: false             # 形码字重固定，不做动态调频
   enable_encoder: false
+  encode_commit_history: false
+  # 不要在这里加 comment_format: xform/.+//
+  # 上游默认带这一行，它会抹掉候选后面的五笔编码提示。
 
-  encode_commit_history: false          # 是否对已上屏词自动成词（仅 table_translator 有效）
-  preedit_format:                       # 上屏码自定义
-#    - xform/.+//
-#  comment_format:                      # 提示码自定义（停用，保留编码提示）
-#    - xform/.+//                        # 当前默认不提示编码，消除所有候选词后的提示码   ← 已停用：这行会抹掉候选后的五笔编码提示
-
-
-# 简入繁出 通过 OpenCC 支持 github地址：https://github.com/BYVoid/OpenCC
-# 已集成在输入法程序中，在输入法程序目录的 opencc 目录下
-# 输入法程序中使用 OpenCC 简转繁的过程是这样：
-# 1. 先从简转繁体
-# 2. 如果配置了台湾繁体，就会将上一步生成的繁体进一步处理
-# 3. 根据这个文件：https://github.com/BYVoid/OpenCC/blob/master/data/dictionary/TWVariants.txt 把台湾与正常繁体不同的地方转成台湾版本的字，比如 “床”
-
-tradition:
-  #  opencc_config: s2t.json  # 简 -> 繁
-  opencc_config: s2hk.json  # 繁 -> 香港
-  #  opencc_config: t2s.json   # 繁 -> 简
-  #  opencc_config: t2tw.json  # 繁 -> 台湾
-  #  opencc_config: t2hk.json  # 繁 -> 香港
-  #  opencc_config: s2tw.json  # 簡 -> 臺灣標準
-  #  opencc_config: s2twp.json  # 簡 -> 臺灣片語
-  option_name: zh_trad
-
-reverse_lookup:
-  dictionary: pinyin_simp  # 反查使用的拼音词库
-  prefix: "z"              # 反查前缀，以它为起点
-  suffix: "'"              # 反查后缀，以它为结点
-  tips: [拼音]              # 反查时的提示信息
-
+# ---------- 拼音（辅，z 引导）----------
+pinyin_hint:
+  tag: pinyin_hint
+  dictionary: pinyin_simp
+  prefix: "z"                         # 五笔码表无 z 开头编码，零冲突
+  tips: "〔拼音〕"
+  enable_completion: true
+  enable_user_dict: false
+  initial_quality: 0.5
   preedit_format:
     - xform/([nl])v/$1ü/
     - xform/([nl])ue/$1üe/
     - xform/([jqxy])v/$1u/
 
+# ---------- 拼音候选 → 标注五笔编码 ----------
+# ReverseLookupFilter 继承 TagMatching，tags 限定它只作用于拼音分段。
+wubi_code_hint:
+  tags: [ pinyin_hint ]
+  dictionary: wubi86_jidian
+  overwrite_comment: true
+
+# ---------- 简繁 ----------
+# opencc_config 可选值（Squirrel / Weasel 自带）：
+#   s2t.json    简 → 繁（OpenCC 标准繁体）
+#   s2hk.json   简 → 香港繁体
+#   s2tw.json   简 → 台湾正体
+#   s2twp.json  简 → 台湾正体（含词汇转换，如 软件→軟體）
+tradition:
+  opencc_config: s2hk.json
+  option_name: zh_trad
+
 # ---------- Emoji ----------
-# 打字时把候选词对应的 emoji 作为额外候选给出（微笑 → 😊）。
-# Ctrl+Shift+E 开关；词表在 opencc/emoji.txt，可自行增删。
+# 把候选词对应的 emoji 作为额外候选给出（微笑 → 😊）。
+# 词表 opencc/emoji.txt 由 install.sh 下载（GPL-3.0，不随仓库分发），
+# 缺失时 Rime 静默跳过，不影响输入。
 emoji_suggestion:
   opencc_config: emoji.json
   option_name: emoji_suggestion
-  tips: all              # 在 emoji 后面用注释标出原词
-  inherit_comment: false # 不要继承五笔编码提示，否则注释会串味
+  tips: all              # emoji 后用注释标出原词
+  inherit_comment: false # 不继承五笔编码提示，否则注释会串味
 
 punctuator:
   import_preset: default
-#  import_preset: symbols
-# 开始快捷输入符号功能，前面留两个空格
-# 对应需要将下面 recognizer -> patterns 下面的 punct 字段的注释去掉
 
 key_binder:
   import_preset: default
@@ -130,16 +147,11 @@ key_binder:
 recognizer:
   import_preset: default
   patterns:
-#    punct: "^/([0-9]+[a-z]*|[a-z]+)$" # 注意前方需要有4个空格，跟下面对齐
-    reverse_lookup: "^z[a-z]*'?$" # 反查词条的正则
-
-# 重复上一次输入
-# 「重复上一次输入」——默认停用。
-# 原因：它的触发键 z 与下面 reverse_lookup 的拼音反查前缀 z 撞了。
-# recognizer 会把 ^z[a-z]*'?$ 打上 reverse_lookup 标签，而 history_translator
-# 默认只吃 abc 标签，所以这个功能实际上永远不会触发，是一段死配置。
-# 想启用就换个不冲突的触发键，并同步把它从 engine/translators 里放回去。
-#repeat_last_input:
-#  input: z
-#  size: 1
-#  initial_quality: 1
+    # affix_segmentor 只有在分段已带 pinyin_hint 标签时才会剥前缀，
+    # 所以这条规则是必需的，不能删。
+    #
+    # 正则末尾刻意不写 '?：单引号在 default.custom.yaml 里绑成了
+    # 「选第三候选」（极点五笔的惯例），有候选菜单时它永远到不了这里，
+    # 写上只是一段死配置。代价是拼音没有手动音节分隔符——本方案里拼音
+    # 只用来救场查单字，可以接受。
+    pinyin_hint: "^z[a-z]*$"

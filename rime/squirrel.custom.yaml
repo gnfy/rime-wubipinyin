@@ -19,7 +19,7 @@ patch:
       author: KyleBing
 
       candidate_format: "[label]. [candidate] [comment]"  # [comment] 用来显示五笔编码
-      candidate_list_layout: linear                       # stacked 竖排 | linear 横排
+      candidate_list_layout: stacked                      # stacked 竖排 | linear 横排。候选带编码注释时竖排更易读
       text_orientation: horizontal
       status_message_type: mix                            # long | short | mix
       memorize_size: true                                 # 记住候选框位置
@@ -66,7 +66,7 @@ patch:
       author: KyleBing
 
       candidate_format: "[label]. [candidate] [comment]"
-      candidate_list_layout: linear
+      candidate_list_layout: stacked
       text_orientation: horizontal
       status_message_type: mix
       memorize_size: true

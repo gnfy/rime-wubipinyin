@@ -111,7 +111,7 @@ translators:
   - script_translator@pinyin_hint   # 拼音
 recognizer:
   patterns:
-    pinyin_hint: "^z[a-z]*'?$"      # 必需，见下
+    pinyin_hint: "^z[a-z]*$"        # 必需，见下
 ```
 
 `affix_segmentor` 会把前缀切成一个带 `phony` 标签的独立分段（不上屏），剩下的编码单独成段：
@@ -165,7 +165,7 @@ class ReverseLookupFilter : public Filter, TagMatching {
 
 于是打 `zweixiao` 出「微笑」时，候选后面显示的是它的五笔编码而不是拼音——不会打的字用拼音打出来，顺手就把五笔码记住了。
 
-另外，纯五笔方案里 `translator/comment_format` **不要**写 `xform/.+//`。上游默认带这一行，它会把候选后面的编码提示全部抹掉，配合 `enable_completion: true` 本来是最有效的盲打练习方式。
+另外，`translator/comment_format` **不要**写 `xform/.+//`。上游默认带这一行，它会把候选后面的编码提示全部抹掉，配合 `enable_completion: true` 本来是最有效的盲打练习方式。
 
 ---
 
@@ -201,7 +201,7 @@ an<Translation> Simplifier::Apply(...) {
 
 ## 六、如果你想要无前缀自由混输
 
-也可以，代价是放弃四码上屏。改 `wubi86_jidian_pinyin.schema.yaml`：
+也可以，代价是放弃四码上屏。改 `wubi86_jidian.schema.yaml`：
 
 ```yaml
 speller:
